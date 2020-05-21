@@ -1,5 +1,6 @@
 def main():
     import pygame
+    import src.maze as maze
 
     pygame.init()
 
@@ -13,6 +14,8 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
+        pygame.display.update()
 
 if __name__ == '__main__':
     main()
