@@ -30,11 +30,11 @@ class Field(Button):
     visitedColour = ()
     wallColour = (234, 123, 23)
 
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, length):
         self.x = x
         self.y = y
-        self.width = width
-        self.height = height
+        self.width = length
+        self.height = length
         self.walls = [True for _ in range(4)]#[up, down, left, right]
         self.visited = False
 
@@ -56,3 +56,23 @@ class Field(Button):
         if self.walls[3]:
             pygame.draw.line(win, self.wallColour, (self.x + self.width, self.y),
                                                  (self.x + self.width, self.y + self.height), 4)
+
+def generateGrid(X, Y, length, amountR, amountC):
+    grid = []
+    x = X
+    y = Y
+    for _ in range(amountR):
+        row = []
+        for _ in range(amountC):
+            row.append(Field(x, y, length))
+            x = x + length
+        grid.append(row)
+        y = y + length
+        x = X
+
+    return grid
+
+def drawMaze(win, grid):
+    for i in grid:
+        for j in i:
+            j.show(win)
