@@ -2,7 +2,7 @@ import pygame
 import random
 
 class Button():
-    colour = (255, 255, 255)
+    colour = (255, 255, 0)
 
     def __init__(self, x, y, width, height, text):
         self.x = x
@@ -35,8 +35,8 @@ class Stat(Button):
         self.y = y
         self.width = width
         self.height = height
-        self.text = '0'
-        self.value = 0
+        self.text = '10'
+        self.value = 10
 
     def get(self):
         return self.value
@@ -45,29 +45,19 @@ class Stat(Button):
         self.value = newV
         self.text = str(newV)
 
-class StatIncrement(Button):
-    def __init__(self, x, y, length, text, object):
+class StatChange(Button):
+    def __init__(self, x, y, length, text, object, function):
         self.x = x
         self.y = y
         self.width = length
         self.height = length
-        self.text = '+'
+        self.text = text
         self.object = object
+        self.function = function
 
     def action(self):
-        self.object.set(self.object.get() + 1)
-
-class StatDecrement(Button):
-    def __init__(self, x, y, length, text, object):
-        self.x = x
-        self.y = y
-        self.width = length
-        self.height = length
-        self.text = '-'
-        self.object = object
-
-    def action(self):
-        self.object.set(self.object.get() - 1)
+        x = self.function(self.object.get())
+        self.object.set(x)
 
 class Corridor(Button):
     baseColour = (23, 234, 134)
@@ -89,7 +79,7 @@ class Corridor(Button):
         pygame.draw.rect(win, colour, (self.x, self.y, self.width, self.height), 0)
 
 class Wall(Button):
-    wallColour = (0, 0, 0)
+    colour = (0, 0, 0)
 
     def __init__(self, x, y, length):
         self.x = x
@@ -98,10 +88,9 @@ class Wall(Button):
         self.height = length
 
     def show(self, win):
-        pygame.draw.rect(win, self.wallColour, (self.x, self.y, self.width, self.height), 0)
+        pygame.draw.rect(win, self.colour, (self.x, self.y, self.width, self.height), 0)
 
-def generateGrid(X, Y, length, amountR, amountC, start, end):
-    grid = []
+def generateGrid(amountR, amountC, start, end):
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
     stack = []
 
@@ -151,9 +140,14 @@ def generateGrid(X, Y, length, amountR, amountC, start, end):
         else:
             del stack[-1]
 
+    return maze
+
+def fillMaze(X, Y, length, grid):
     x = X
     y = Y
-    for i in maze:
+    maze = []
+
+    for i in grid:
         row = []
         for j in i:
             if j == 1:
@@ -162,11 +156,11 @@ def generateGrid(X, Y, length, amountR, amountC, start, end):
                 row.append(Wall(x, y, length))
 
             x = x + length
-        grid.append(row)
+        maze.append(row)
         y = y + length
         x = X
 
-    return grid
+    return maze   
 
 def drawMaze(win, grid):
     for i in grid:
