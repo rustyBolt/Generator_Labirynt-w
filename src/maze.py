@@ -35,8 +35,8 @@ class Stat(Button):
         self.y = y
         self.width = width
         self.height = height
-        self.text = '10'
-        self.value = 10
+        self.text = '0'
+        self.value = 0
 
     def get(self):
         return self.value
@@ -90,6 +90,32 @@ class Wall(Button):
     def show(self, win):
         pygame.draw.rect(win, self.colour, (self.x, self.y, self.width, self.height), 0)
 
+class Clicker(Wall):
+    clickedColour = (255, 0, 0)
+    def __init__(self, x, y, length, point):
+        self.x = x
+        self.y = y
+        self.width = length
+        self.height = length
+        self.clicked = False
+        self.point = point
+    
+    def show(self, win):
+        if self.clicked:
+            colour = self.clickedColour
+        else:
+            colour = self.colour
+
+        pygame.draw.rect(win, colour, (self.x, self.y, self.width, self.height), 0)
+
+    def action(self):
+        if self.clicked:
+            self.clicked = False
+        else:
+            self.clicked = True
+
+        return self.point
+
 def generateGrid(amountR, amountC, start, end):
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
     stack = []
@@ -104,7 +130,7 @@ def generateGrid(amountR, amountC, start, end):
         vertical = True
     if end[0] == amountR -1:
         end2 = (end[0] - 1, end[1])
-    if end[1] == 0:
+    if end[0] == 0:
         end2 = (end[0] + 1, end[1])
 
     directions = [(start[0]+1, start[1]),
@@ -113,7 +139,7 @@ def generateGrid(amountR, amountC, start, end):
                   (start[0], start[1]-1)]
 
     for i in directions:
-        if i[0] < 0 or i[0] > amountR or i[1] < 0 or i[1] > amountC:
+        if i[0] < 0 or i[0] > amountR - 1 or i[1] < 0 or i[1] > amountC - 1:
             index = directions.index(i)
             del directions[index]
 
@@ -238,6 +264,8 @@ def generateGrid(amountR, amountC, start, end):
                     maze[end[0]][end[1] + 1] = 1
                     found = True
 
+    maze[start[0]][start[1]] = 1
+
     return maze
 
 def fillMaze(X, Y, length, grid):
@@ -260,7 +288,27 @@ def fillMaze(X, Y, length, grid):
 
     return maze   
 
+def generateClickers(X, Y, length, Rows, Collumns):
+    x = X
+    y = Y
+    clickers = []
+
+    for i in range(Rows):
+        for j in range(Collumns):
+            if i == 0 or i == Rows - 1\
+                or j == 0 or j == Collumns - 1:
+                    clickers.append(Clicker(x, y, length, (i, j)))
+            x = x + length
+        y = y + length
+        x = X
+
+    return clickers
+
 def drawMaze(win, grid):
     for i in grid:
         for j in i:
             j.show(win)
+
+def drawClickers(win, l):
+    for i in l:
+        i.show(win)

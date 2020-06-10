@@ -9,34 +9,25 @@ def main():
     add = lambda x: x + 1
     subtract = lambda x: x - 1
     m = []
+    clickers = []
+    points = []
+    R = 0
+    C = 0
 
     pygame.init()
 
     display = pygame.display.set_mode((900, 700))
 
     Rows = maze.Stat(630, 20, 100, 50)
-    Radd = maze.StatChange(630, 70, 50, "+", Rows, add)
-    Rsub = maze.StatChange(680, 70, 50, "-", Rows, subtract)
     Collumns = maze.Stat(630, 130, 100, 50)
-    Cadd = maze.StatChange(630, 180, 50, "+", Collumns, add)
-    Csub = maze.StatChange(680, 180, 50, "-", Collumns, subtract)
+    changers = [maze.StatChange(630, 70, 50, "+", Rows, add),
+                maze.StatChange(680, 70, 50, "-", Rows, subtract),
+                maze.StatChange(630, 180, 50, "+", Collumns, add),
+                maze.StatChange(680, 180, 50, "-", Collumns, subtract)]
 
     Generate = maze.Button(630, 250, 200, 50, "Generój")
 
     while True:
-        display.fill(white)
-
-        Rows.show(display)
-        Collumns.show(display)
-        Generate.show(display)
-        Radd.show(display)
-        Rsub.show(display)
-        Cadd.show(display)
-        Csub.show(display)
-
-        R = Rows.get()
-        C = Collumns.get()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -45,24 +36,50 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
 
-                if Radd.isOver(pos):
-                    Radd.action()
+                for i in changers:
+                    if i.isOver(pos):
+                        i.action()
+                        R = Rows.get()
+                        C = Collumns.get()
 
-                if Rsub.isOver(pos):
-                    Rsub.action()
+                        if R>0 and C>0:
+                            if C > R:
+                                L = C
+                            else:
+                                L = R
 
-                if Cadd.isOver(pos):
-                    Cadd.action()
-
-                if Csub.isOver(pos):
-                    Csub.action()
+                            clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
 
                 if Generate.isOver(pos):
-                    grid = maze.generateGrid(R, C, (3, 0), (3, C - 1))
-                    m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//C, grid)
+                    clickers = []
+                    grid = maze.generateGrid(R, C, points[0], points[1])
+                    m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
 
+                for i in clickers:
+                    if i.isOver(pos):
+                        a = i.action()
 
-        maze.drawMaze(display, m )
+                        if a in points:
+                            points.remove(a)
+                        elif not points:
+                            points.append(a)
+                        elif len(points) == 1:
+                            points.append(a)
+                        
+                        
+                        print(points)
+
+        display.fill(white)
+
+        Rows.show(display)
+        Collumns.show(display)
+        Generate.show(display)
+        for i in changers:
+            i.show(display)
+
+        maze.drawClickers(display, clickers)
+
+        maze.drawMaze(display, m)
 
         pygame.display.update()
 
