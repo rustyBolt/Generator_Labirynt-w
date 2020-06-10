@@ -93,6 +93,19 @@ class Wall(Button):
 def generateGrid(amountR, amountC, start, end):
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
     stack = []
+    d = 0
+    vertical = False
+
+    if end[1] == amountC -1:
+        end2 = (end[0], end[1] - 1)
+        vertical = True
+    if end[1] == 0:
+        end2 = (end[0], end[1] + 1)
+        vertical = True
+    if end[0] == amountR -1:
+        end2 = (end[0] - 1, end[1])
+    if end[1] == 0:
+        end2 = (end[0] + 1, end[1])
 
     directions = [(start[0]+1, start[1]),
                   (start[0], start[1]+1),
@@ -106,13 +119,40 @@ def generateGrid(amountR, amountC, start, end):
 
     stack.append([start, directions])
     maze[start[0]][start[1]] = 1
+    maze[end[0]][end[1]] = 1
+    maze[end2[0]][end2[1]] = 1
 
     while stack:
         current = stack[-1]
 
         if current[1]:
-            next = random.choice(current[1])
-            current[1].remove(next)
+            if d%3 == 0:
+                d = 0
+
+            if d > 0:
+                if len(stack) > 1:
+                    before = stack[-2][0]
+
+                a = [-1, -1]
+                c = current[0]
+
+                if c[0] == before[0]:
+                    a[0] = c[0]
+                elif c[1] == before[1]:
+                    a[1] = c[1]
+
+                if a[0] > -1:
+                    a[0], a[1] = 0, a[0]
+                else:
+                    a[0] = 1
+
+                for i in current[1]:
+                    if i[a[0]] == a[1]:
+                        next = i
+                        current[1].remove(next)
+            else:
+                next = random.choice(current[1])
+                current[1].remove(next)
 
             direction = [(next[0]+1, next[1]),
                           (next[0], next[1]+1),
@@ -137,8 +177,66 @@ def generateGrid(amountR, amountC, start, end):
                 stack.append([next, direction])
                 maze[next[0]][next[1]] = 1
 
+            d = d + 1
+
         else:
             del stack[-1]
+            d = 0
+
+    if vertical:
+        found = False
+
+        if not found:
+            if end2[0] > 1 :
+                if maze[end2[0] - 2][end2[1]] == 1:
+                    if not maze[end2[0] - 1][end2[1] - 1] == 1\
+                        or maze[end2[0] - 1][end2[1] + 1] == 1:
+                        maze[end2[0] - 1][end2[1]] = 1
+                        found = True
+        if not found:
+            if end2[0] < amountR -2:
+                if maze[end2[0] + 2][end2[1]] == 1:
+                    if not maze[end2[0] + 1][end2[1] + 1] == 1\
+                        or maze[end2[0] + 1][end2[1] - 1] == 1:
+                        maze[end2[0] + 1][end2[1]] = 1
+                        found = True
+        if not found:
+            if end[0] > 1 :
+                if maze[end[0] - 2][end[1]] == 1:
+                    maze[end[0] - 1][end[1]] = 1
+                    found = True
+        if not found:
+            if end[0] < amountR -2:
+                if maze[end[0] + 2][end[1]] == 1:
+                    maze[end[0] + 1][end[1]] = 1
+                    found = True
+    else:
+        found = False
+
+        if not found:
+            if end2[1] > 1:
+                if maze[end2[0]][end2[1] - 2] == 1:
+                    if not maze[end2[0] + 1][end2[1] - 1] == 1\
+                        or maze[end2[0] - 1][end2[1] - 1] == 1:
+                        maze[end2[0]][end2[1] - 1] = 1
+                        found = True
+        if not found:
+            if end2[1] < amountC - 2:
+                if maze[end2[0]][end2[1] + 2] == 1:
+                    if not maze[end2[0] + 1][end2[1] + 1] == 1\
+                        or maze[end2[0] - 1][end2[1] + 1] == 1:
+                        maze[end2[0]][end2[1] + 1] = 1
+                        found = True
+        if not found:
+            if end[1] > 1:
+                if maze[end[0]][end[1] - 2] == 1:
+                    maze[end[0]][end[1] - 1] = 1
+                    found = True
+        if not found:
+            if end[1] < amountC - 2:
+                if maze[end[0]][end[1] + 2] == 1:
+                    maze[end[0]][end[1] + 1] = 1
+                    found = True
 
     return maze
 

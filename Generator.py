@@ -12,7 +12,7 @@ def main():
 
     pygame.init()
 
-    display = pygame.display.set_mode((800, 800))
+    display = pygame.display.set_mode((900, 700))
 
     Rows = maze.Stat(630, 20, 100, 50)
     Radd = maze.StatChange(630, 70, 50, "+", Rows, add)
@@ -58,7 +58,7 @@ def main():
                     Csub.action()
 
                 if Generate.isOver(pos):
-                    grid = maze.generateGrid(R, C, (3, 0), ())
+                    grid = maze.generateGrid(R, C, (3, 0), (3, C - 1))
                     m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//C, grid)
 
 
