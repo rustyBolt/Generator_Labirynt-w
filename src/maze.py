@@ -268,6 +268,77 @@ def generateGrid(amountR, amountC, start, end):
 
     return maze
 
+def createPath(grid, start, end, amountR, amountC):
+    stack = []
+
+    directions = [(start[0]+1, start[1]),
+                  (start[0], start[1]+1),
+                  (start[0]-1, start[1]),
+                  (start[0], start[1]-1)]
+
+    for i in directions:
+        if i[0] < 0 or i[0] > amountR - 1 or i[1] < 0 or i[1] > amountC - 1:
+            index = directions.index(i)
+            del directions[index]
+
+    for i in directions:
+        if grid[i[0]][i[1]] == 0:
+            index = directions.index(i)
+            del directions[index]
+
+    dir = []
+
+    for i in directions:
+        if grid[i[0]][i[1]] == 1:
+            dir.append(i)
+
+    stack.append([start, dir])
+
+    while stack:
+        current = stack[-1]
+
+        if current[0] == end:
+            break
+
+        if current[1]:
+            next = random.choice(current[1])
+            current[1].remove(next)
+
+            direction = [(next[0]+1, next[1]),
+                          (next[0], next[1]+1),
+                          (next[0]-1, next[1]),
+                          (next[0], next[1]-1)]
+
+            directions = direction.copy()
+                
+            for i in directions:
+                if i[0] < 0 or i[0] > amountR-1 or i[1] < 0 or i[1] > amountC-1:
+                    index = direction.index(i)
+                    del direction[index]
+
+                if i == current[0]:
+                    index = direction.index(i)
+                    del direction[index]
+
+            dir = []
+
+            for i in direction:
+                if grid[i[0]][i[1]] == 1:
+                    dir.append(i)
+
+            stack.append([next, dir])
+
+        else:
+            del stack[-1]
+
+    path = []
+
+    for i in stack:
+        path.append(i[0])
+
+    return path
+
+
 def fillMaze(X, Y, length, grid):
     x = X
     y = Y
@@ -303,6 +374,12 @@ def generateClickers(X, Y, length, Rows, Collumns):
         x = X
 
     return clickers
+
+def drawPath(maze, path):
+    for i in range(len(maze)):
+        for j in range(len(maze[0])):
+            if (i, j) in path:
+                maze[i][j].visited = True
 
 def drawMaze(win, grid):
     for i in grid:

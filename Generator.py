@@ -6,13 +6,14 @@ def main():
     mazeX = 20
     mazeY = 20
     maxMazeWidth = 600
-    add = lambda x: x + 1
-    subtract = lambda x: x - 1
     m = []
     clickers = []
     points = []
+    path = []
     R = 0
     C = 0
+    add = lambda x: x + 1
+    subtract = lambda x: x - 1
 
     pygame.init()
 
@@ -53,7 +54,9 @@ def main():
                 if Generate.isOver(pos):
                     clickers = []
                     grid = maze.generateGrid(R, C, points[0], points[1])
+                    path = maze.createPath(grid, points[0], points[1], R, C)
                     m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
+                    maze.drawPath(m, path)
 
                 for i in clickers:
                     if i.isOver(pos):
@@ -65,9 +68,6 @@ def main():
                             points.append(a)
                         elif len(points) == 1:
                             points.append(a)
-                        
-                        
-                        print(points)
 
         display.fill(white)
 
