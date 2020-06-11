@@ -138,12 +138,14 @@ def generateGrid(amountR, amountC, start, end):
     if end[0] == 0:
         end2 = (end[0] + 1, end[1])
 
-    directions = [(start[0]+1, start[1]),
+    direction = [(start[0]+1, start[1]),
                   (start[0], start[1]+1),
                   (start[0]-1, start[1]),
                   (start[0], start[1]-1)]
 
-    for i in directions:
+    directions = direction.copy()
+
+    for i in direction:
         if i[0] < 0 or i[0] > amountR - 1 or i[1] < 0 or i[1] > amountC - 1:
             index = directions.index(i)
             del directions[index]
@@ -220,15 +222,15 @@ def generateGrid(amountR, amountC, start, end):
         if not found:
             if end2[0] > 1 :
                 if maze[end2[0] - 2][end2[1]] == 1:
-                    if not maze[end2[0] - 1][end2[1] - 1] == 1\
-                        or maze[end2[0] - 1][end2[1] + 1] == 1:
+                    if not (maze[end2[0] - 1][end2[1] - 1] == 1\
+                        or maze[end2[0] - 1][end2[1] + 1] == 1):
                         maze[end2[0] - 1][end2[1]] = 1
                         found = True
         if not found:
             if end2[0] < amountR -2:
                 if maze[end2[0] + 2][end2[1]] == 1:
-                    if not maze[end2[0] + 1][end2[1] + 1] == 1\
-                        or maze[end2[0] + 1][end2[1] - 1] == 1:
+                    if not (maze[end2[0] + 1][end2[1] + 1] == 1\
+                        or maze[end2[0] + 1][end2[1] - 1] == 1):
                         maze[end2[0] + 1][end2[1]] = 1
                         found = True
         if not found:
@@ -247,15 +249,15 @@ def generateGrid(amountR, amountC, start, end):
         if not found:
             if end2[1] > 1:
                 if maze[end2[0]][end2[1] - 2] == 1:
-                    if not maze[end2[0] + 1][end2[1] - 1] == 1\
-                        or maze[end2[0] - 1][end2[1] - 1] == 1:
+                    if not (maze[end2[0] + 1][end2[1] - 1] == 1\
+                        or maze[end2[0] - 1][end2[1] - 1] == 1):
                         maze[end2[0]][end2[1] - 1] = 1
                         found = True
         if not found:
             if end2[1] < amountC - 2:
                 if maze[end2[0]][end2[1] + 2] == 1:
-                    if not maze[end2[0] + 1][end2[1] + 1] == 1\
-                        or maze[end2[0] - 1][end2[1] + 1] == 1:
+                    if not (maze[end2[0] + 1][end2[1] + 1] == 1\
+                        or maze[end2[0] - 1][end2[1] + 1] == 1):
                         maze[end2[0]][end2[1] + 1] = 1
                         found = True
         if not found:

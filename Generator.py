@@ -6,7 +6,11 @@ def main():
     mazeX = 20
     mazeY = 20
     maxMazeWidth = 600
+    peekX = 630
+    peekY = 240
+    maxPeekWidth = 300
     m = []
+    peek = []
     clickers = []
     points = []
     multiple = []
@@ -42,6 +46,8 @@ def main():
                 for i in changers:
                     if i.isOver(pos):
                         i.action()
+                        peek = []
+                        points = []
                         R = Rows.get()
                         C = Collumns.get()
 
@@ -66,22 +72,27 @@ def main():
                             
                         if len(points) == 2:
                             grid = maze.generateGrid(R, C, points[0], points[1])
+                            peek = maze.fillMaze(peekX, peekY, maxPeekWidth//L, grid)
                         else:
                             grid = []
+                            peek = []
 
                 if Generate.isOver(pos):
                     clickers = []
+                    peek = []
                     path = maze.createPath(grid, points[0], points[1], R, C)
                     m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
                     maze.drawPath(m, path)
 
                 if Reset.isOver(pos):
-                    path = []
-                    m = []
-                    multiple = []
-                    points = []
+                    if m:
+                        path = []
+                        m = []
+                        multiple = []
+                        points = []
+                        peek = []
 
-                    clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
+                        clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
 
                 for i in m:
                     for j in i:
@@ -115,6 +126,7 @@ def main():
         maze.drawClickers(display, clickers)
 
         maze.drawMaze(display, m)
+        maze.drawMaze(display, peek)
 
         pygame.display.update()
 
