@@ -360,18 +360,19 @@ def fillMaze(X, Y, length, grid):
     y = Y
     maze = []
 
-    for i in range(len(grid)):
-        row = []
-        for j in range(len(grid[0])):
-            if grid[i][j] == 1:
-                row.append(Corridor(x, y, length, (i, j)))
-            else:
-                row.append(Wall(x, y, length))
+    if grid:
+        for i in range(len(grid)):
+            row = []
+            for j in range(len(grid[0])):
+                if grid[i][j] == 1:
+                    row.append(Corridor(x, y, length, (i, j)))
+                else:
+                    row.append(Wall(x, y, length))
 
-            x = x + length
-        maze.append(row)
-        y = y + length
-        x = X
+                x = x + length
+            maze.append(row)
+            y = y + length
+            x = X
 
     return maze   
 
@@ -392,12 +393,13 @@ def generateClickers(X, Y, length, Rows, Collumns):
     return clickers
 
 def drawPath(maze, path):
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
-            if (i, j) in path:
-                maze[i][j].visited = True
-            else:
-                maze[i][j].visited = False
+    if maze:
+        for i in range(len(maze)):
+            for j in range(len(maze[0])):
+                if (i, j) in path:
+                    maze[i][j].visited = True
+                else:
+                    maze[i][j].visited = False
 
 def drawMaze(win, grid):
     for i in grid:

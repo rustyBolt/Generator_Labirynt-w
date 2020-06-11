@@ -18,7 +18,7 @@ def main():
 
     pygame.init()
 
-    display = pygame.display.set_mode((900, 700))
+    display = pygame.display.set_mode((1100, 700))
 
     Rows = maze.Stat(630, 20, 100, 50)
     Collumns = maze.Stat(630, 130, 100, 50)
@@ -27,7 +27,8 @@ def main():
                 maze.StatChange(630, 180, 50, "+", Collumns, add),
                 maze.StatChange(680, 180, 50, "-", Collumns, subtract)]
 
-    Generate = maze.Button(630, 250, 200, 50, "Generój")
+    Generate = maze.Button(745, 20, 200, 50, "Generój")
+    Reset = maze.Button(745, 85, 200, 50, "Wyczyść")
 
     while True:
         for event in pygame.event.get():
@@ -52,13 +53,6 @@ def main():
 
                             clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
 
-                if Generate.isOver(pos):
-                    clickers = []
-                    grid = maze.generateGrid(R, C, points[0], points[1])
-                    path = maze.createPath(grid, points[0], points[1], R, C)
-                    m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
-                    maze.drawPath(m, path)
-
                 for i in clickers:
                     if i.isOver(pos):
                         a = i.action()
@@ -69,6 +63,25 @@ def main():
                             points.append(a)
                         elif len(points) == 1:
                             points.append(a)
+                            
+                        if len(points) == 2:
+                            grid = maze.generateGrid(R, C, points[0], points[1])
+                        else:
+                            grid = []
+
+                if Generate.isOver(pos):
+                    clickers = []
+                    path = maze.createPath(grid, points[0], points[1], R, C)
+                    m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
+                    maze.drawPath(m, path)
+
+                if Reset.isOver(pos):
+                    path = []
+                    m = []
+                    multiple = []
+                    points = []
+
+                    clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
 
                 for i in m:
                     for j in i:
@@ -95,6 +108,7 @@ def main():
         Rows.show(display)
         Collumns.show(display)
         Generate.show(display)
+        Reset.show(display)
         for i in changers:
             i.show(display)
 
