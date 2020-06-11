@@ -9,6 +9,7 @@ def main():
     m = []
     clickers = []
     points = []
+    multiple = []
     path = []
     R = 0
     C = 0
@@ -68,6 +69,26 @@ def main():
                             points.append(a)
                         elif len(points) == 1:
                             points.append(a)
+
+                for i in m:
+                    for j in i:
+                        if j.isOver(pos):
+                            p = j.action()
+
+                            if not p is None:
+                                if p in multiple:
+                                    multiple.remove(p)
+                                else:
+                                    multiple.append(p)
+                            
+                            if multiple:
+                                paths = maze.createMultiplePath(
+                                    grid, points[0], points[1], multiple, R, C)
+
+                                maze.drawPath(m, paths)
+
+                            else:
+                                maze.drawPath(m, path)
 
         display.fill(white)
 

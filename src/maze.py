@@ -59,25 +59,6 @@ class StatChange(Button):
         x = self.function(self.object.get())
         self.object.set(x)
 
-class Corridor(Button):
-    baseColour = (23, 234, 134)
-    visitedColour = (234, 123, 23)
-
-    def __init__(self, x, y, length):
-        self.x = x
-        self.y = y
-        self.width = length
-        self.height = length
-        self.visited = False
-
-    def show(self, win):
-        if self.visited:
-            colour = self.visitedColour
-        else:
-            colour = self.baseColour
-
-        pygame.draw.rect(win, colour, (self.x, self.y, self.width, self.height), 0)
-
 class Wall(Button):
     colour = (0, 0, 0)
 
@@ -115,6 +96,30 @@ class Clicker(Wall):
             self.clicked = True
 
         return self.point
+
+class Corridor(Clicker):
+    baseColour = (23, 234, 134)
+    visitedColour = (234, 123, 23)
+    cColour = (255, 0, 0)
+
+    def __init__(self, x, y, length, point):
+        self.x = x
+        self.y = y
+        self.width = length
+        self.height = length
+        self.clicked = False
+        self.point = point
+        self.visited = False
+
+    def show(self, win):
+        if self.visited:
+            colour = self.visitedColour
+        elif self.clicked:
+            colour = self.cColour
+        else:
+            colour = self.baseColour
+
+        pygame.draw.rect(win, colour, (self.x, self.y, self.width, self.height), 0)
 
 def generateGrid(amountR, amountC, start, end):
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
@@ -338,17 +343,28 @@ def createPath(grid, start, end, amountR, amountC):
 
     return path
 
+def createMultiplePath(grid, start, end, points, amountR, amountC):
+    points.insert(0, start)
+    points.append(end)
+    paths = []
+
+    try:
+        for i in range(len(points)):
+            p = createPath(grid, points[i], points[i + 1], amountR, amountC)
+            paths = paths + p
+    except IndexError:
+        return paths
 
 def fillMaze(X, Y, length, grid):
     x = X
     y = Y
     maze = []
 
-    for i in grid:
+    for i in range(len(grid)):
         row = []
-        for j in i:
-            if j == 1:
-                row.append(Corridor(x, y, length))
+        for j in range(len(grid[0])):
+            if grid[i][j] == 1:
+                row.append(Corridor(x, y, length, (i, j)))
             else:
                 row.append(Wall(x, y, length))
 
@@ -380,6 +396,8 @@ def drawPath(maze, path):
         for j in range(len(maze[0])):
             if (i, j) in path:
                 maze[i][j].visited = True
+            else:
+                maze[i][j].visited = False
 
 def drawMaze(win, grid):
     for i in grid:
