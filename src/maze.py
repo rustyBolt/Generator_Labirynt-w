@@ -125,18 +125,19 @@ def generateGrid(amountR, amountC, start, end):
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
     stack = []
     d = 0
-    vertical = False
+    end2 = ()
+    end3 = ()
 
-    if end[1] == amountC -1:
-        end2 = (end[0], end[1] - 1)
-        vertical = True
-    if end[1] == 0:
-        end2 = (end[0], end[1] + 1)
-        vertical = True
-    if end[0] == amountR -1:
-        end2 = (end[0] - 1, end[1])
-    if end[0] == 0:
-        end2 = (end[0] + 1, end[1])
+    if end[0] == 0 or end[0] == amountR - 1:
+        if end[1] > 0:
+            end2 = (end[0], end[1] - 1)
+        if end[1] < amountC - 1:
+            end3 = (end[0], end[1] + 1)
+    if end[1] == 0 or end[1] == amountC - 1:
+        if end[0] > 0:
+            end2 = (end[0] - 1, end[1])
+        if end[0] < amountR - 1:
+            end3 = (end[0] + 1, end[1])
 
     direction = [(start[0]+1, start[1]),
                   (start[0], start[1]+1),
@@ -153,7 +154,10 @@ def generateGrid(amountR, amountC, start, end):
     stack.append([start, directions])
     maze[start[0]][start[1]] = 1
     maze[end[0]][end[1]] = 1
-    maze[end2[0]][end2[1]] = 1
+    if end2:
+        maze[end2[0]][end2[1]] = 1
+    if end3:
+        maze[end3[0]][end3[1]] = 1
 
     while stack:
         current = stack[-1]
@@ -216,62 +220,42 @@ def generateGrid(amountR, amountC, start, end):
             del stack[-1]
             d = 0
 
-    if vertical:
-        found = False
+    if end[0] == 0:
+        a = [0, 1]
+    if end[0] == amountR - 1:
+        a = [0, -1]
+    if end[1] == 0:
+        a = [1, 1]
+    if end[1] == amountC - 1:
+        a = [1, -1]
 
-        if not found:
-            if end2[0] > 1 :
-                if maze[end2[0] - 2][end2[1]] == 1:
-                    if not (maze[end2[0] - 1][end2[1] - 1] == 1\
-                        or maze[end2[0] - 1][end2[1] + 1] == 1):
-                        maze[end2[0] - 1][end2[1]] = 1
-                        found = True
-        if not found:
-            if end2[0] < amountR -2:
-                if maze[end2[0] + 2][end2[1]] == 1:
-                    if not (maze[end2[0] + 1][end2[1] + 1] == 1\
-                        or maze[end2[0] + 1][end2[1] - 1] == 1):
-                        maze[end2[0] + 1][end2[1]] = 1
-                        found = True
-        if not found:
-            if end[0] > 1 :
-                if maze[end[0] - 2][end[1]] == 1:
-                    maze[end[0] - 1][end[1]] = 1
-                    found = True
-        if not found:
-            if end[0] < amountR -2:
-                if maze[end[0] + 2][end[1]] == 1:
-                    maze[end[0] + 1][end[1]] = 1
-                    found = True
-    else:
-        found = False
+    p = [end[0], end[1]]
+    finish = False
 
-        if not found:
-            if end2[1] > 1:
-                if maze[end2[0]][end2[1] - 2] == 1:
-                    if not (maze[end2[0] + 1][end2[1] - 1] == 1\
-                        or maze[end2[0] - 1][end2[1] - 1] == 1):
-                        maze[end2[0]][end2[1] - 1] = 1
-                        found = True
-        if not found:
-            if end2[1] < amountC - 2:
-                if maze[end2[0]][end2[1] + 2] == 1:
-                    if not (maze[end2[0] + 1][end2[1] + 1] == 1\
-                        or maze[end2[0] - 1][end2[1] + 1] == 1):
-                        maze[end2[0]][end2[1] + 1] = 1
-                        found = True
-        if not found:
-            if end[1] > 1:
-                if maze[end[0]][end[1] - 2] == 1:
-                    maze[end[0]][end[1] - 1] = 1
-                    found = True
-        if not found:
-            if end[1] < amountC - 2:
-                if maze[end[0]][end[1] + 2] == 1:
-                    maze[end[0]][end[1] + 1] = 1
-                    found = True
+    while not finish:
+        b = (p[0], p[1])
+        p[a[0]] += a[1]
+        maze[p[0]][p[1]] = 1
 
-    maze[start[0]][start[1]] = 1
+        direction = [(p[0]+1, p[1]),
+                          (p[0], p[1]+1),
+                          (p[0]-1, p[1]),
+                          (p[0], p[1]-1)]
+
+        directions = direction.copy()
+                
+        for i in directions:
+            if i[0] < 0 or i[0] > amountR-1 or i[1] < 0 or i[1] > amountC-1:
+                index = direction.index(i)
+                del direction[index]
+
+            if i == b:
+                index = direction.index(i)
+                del direction[index]
+
+        for i in direction:
+            if maze[i[0]][i[1]] == 1:
+                finish = True   
 
     return maze
 
