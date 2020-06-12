@@ -73,6 +73,7 @@ def main():
                         if len(points) == 2:
                             grid = maze.generateGrid(R, C, points[0], points[1])
                             peek = maze.fillMaze(peekX, peekY, maxPeekWidth//L, grid)
+                            maze.showSpecial(peek, points)
                         else:
                             grid = []
                             peek = []
@@ -83,6 +84,7 @@ def main():
                     path = maze.createPath(grid, points[0], points[1], R, C)
                     m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
                     maze.drawPath(m, path)
+                    maze.showSpecial(m, points)
 
                 if Reset.isOver(pos):
                     if m:
