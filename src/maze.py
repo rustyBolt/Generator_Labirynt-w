@@ -9,6 +9,10 @@ class InvalidDimensionsError(Exception):
     def __init__(self, text):
         self.text = text
 
+class InvalidPositionError(Exception):
+    def __init__(self, text):
+        self.text = text
+
 class Button():
     colour = (255, 255, 0)
 
@@ -147,6 +151,11 @@ def generateGrid(amountR, amountC, start, end):
             "Za duże wymiary!"
         )
 
+    if not start or not end:
+        raise InvalidPositionError(
+            "Nie wybrano punktów"
+        )
+
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
     stack = []
     d = 0
@@ -229,7 +238,6 @@ def generateGrid(amountR, amountC, start, end):
                         isC = False
 
                 if isC and isR:
-                    print("i'm inside")
                     d = 0
                     distance = amountC + amountR
                     chosen = ()
