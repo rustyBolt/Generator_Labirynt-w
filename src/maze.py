@@ -2,6 +2,13 @@ import pygame
 import random
 import math
 
+minDim = 2
+maxDim = 30
+
+class InvalidDimensionsError(Exception):
+    def __init__(self, text):
+        self.text = text
+
 class Button():
     colour = (255, 255, 0)
 
@@ -13,7 +20,8 @@ class Button():
         self.text = text
 
     def show(self, win):
-        pygame.draw.rect(win, self.colour, (self.x, self.y, self.width, self.height), 0)
+        pygame.draw.rect(win, self.colour, (self.x, self.y,
+                                     self.width, self.height), 0)
 
         if self.text:
             font = pygame.font.SysFont('comicsans', 60)
@@ -70,7 +78,8 @@ class Wall(Button):
         self.height = length
 
     def show(self, win):
-        pygame.draw.rect(win, self.colour, (self.x, self.y, self.width, self.height), 0)
+        pygame.draw.rect(win, self.colour, (self.x, self.y,
+                                     self.width, self.height), 0)
 
 class Clicker(Wall):
     clickedColour = (255, 0, 0)
@@ -88,7 +97,8 @@ class Clicker(Wall):
         else:
             colour = self.colour
 
-        pygame.draw.rect(win, colour, (self.x, self.y, self.width, self.height), 0)
+        pygame.draw.rect(win, colour, (self.x, self.y,
+                                         self.width, self.height), 0)
 
     def action(self):
         if self.clicked:
@@ -123,12 +133,24 @@ class Corridor(Clicker):
         else:
             colour = self.baseColour
 
-        pygame.draw.rect(win, colour, (self.x, self.y, self.width, self.height), 0)
+        pygame.draw.rect(win, colour, (self.x, self.y,
+                                 self.width, self.height), 0)
 
 def generateGrid(amountR, amountC, start, end):
+    if amountC < minDim or amountR < minDim:
+        raise InvalidDimensionsError(
+            "Za małe wymiary!"
+        )
+
+    if amountC > maxDim or amountR  > maxDim:
+        raise InvalidDimensionsError(
+            "Za duże wymiary!"
+        )
+
     maze = [[0 for _ in range(amountC)] for _ in range(amountR)]
     stack = []
     d = 0
+    found = False
 
     direction = [(start[0]+1, start[1]),
                   (start[0], start[1]+1),
@@ -138,7 +160,8 @@ def generateGrid(amountR, amountC, start, end):
     directions = direction.copy()
 
     for i in direction:
-        if i[0] < 0 or i[0] > amountR - 1 or i[1] < 0 or i[1] > amountC - 1:
+        if i[0] < 0 or i[0] > amountR - 1 or\
+                 i[1] < 0 or i[1] > amountC - 1:
             index = directions.index(i)
             del directions[index]
 
@@ -151,7 +174,8 @@ def generateGrid(amountR, amountC, start, end):
         chosen = ()
 
         for i in directions:
-            dist = math.sqrt((i[0] - end[0])**2 + (i[1] - end[1])**2)
+            dist = math.sqrt(
+                (i[0] - end[0])**2 + (i[1] - end[1])**2)
             if distance > dist:
                 distance = dist
                 chosen = i
@@ -162,37 +186,99 @@ def generateGrid(amountR, amountC, start, end):
     stack.append([start, directions])
     maze[start[0]][start[1]] = 1
 
+    areaR = amountR // 2
+    areaC = amountC // 2
+
     while stack:
         current = stack[-1]
 
+        if current[0] == end:
+            maze[current[0][0]][current[0][1]] = 1
+            del stack[-1]
+            d = 0
+            found = True
+            continue
+
         if current[1]:
-            if d%3 == 0:
-                d = 0
-
-            if d > 0:
-                if len(stack) > 1:
-                    before = stack[-2][0]
-
-                a = [-1, -1]
-                c = current[0]
-
-                if c[0] == before[0]:
-                    a[0] = c[0]
-                elif c[1] == before[1]:
-                    a[1] = c[1]
-
-                if a[0] > -1:
-                    a[0], a[1] = 0, a[0]
+            next = ()
+            if not found:
+                if areaR > end[0]:
+                    if current[0][0] >= end[0]\
+                        and  current[0][0] <= areaR:
+                        isR = True
+                    else:
+                        isR = False
                 else:
-                    a[0] = 1
+                    if current[0][0] >= areaR\
+                        and  current[0][0] <= end[0]:
+                        isR = True
+                    else:
+                        isR = False
 
-                for i in current[1]:
-                    if i[a[0]] == a[1]:
-                        next = i
-                        current[1].remove(next)
-            else:
-                next = random.choice(current[1])
-                current[1].remove(next)
+                if areaC > end[1]:
+                    if current[0][1] >= end[1]\
+                        and  current[0][1] <= areaC:
+                        isC = True
+                    else:
+                        isC = False
+                else:
+                    if current[0][1] >= areaC\
+                        and  current[0][1] <= end[1]:
+                        isC = True
+                    else:
+                        isC = False
+
+                if isC and isR:
+                    print("i'm inside")
+                    d = 0
+                    distance = amountC + amountR
+                    chosen = ()
+                    for i in current[1]:
+                        dist = math.sqrt(
+                            (i[0] - end[0])**2 + (i[1] - end[1])**2)
+                        if distance > dist:
+                            distance = dist
+                            chosen = i
+                    
+                    next = chosen
+                    current[1].remove(next)
+
+            if not next:
+                if d%3 == 0:
+                    d = 0
+
+                if d > 0:
+                    if len(stack) > 1:
+                        before = stack[-2][0]
+
+                        a = [-1, -1]
+                        c = current[0]
+
+                        if c[0] == before[0]:
+                            a[0] = c[0]
+                        elif c[1] == before[1]:
+                            a[1] = c[1]
+
+                        if a[0] > -1:
+                            a[0], a[1] = 0, a[0]
+                        else:
+                            a[0] = 1
+
+                        for i in current[1]:
+                            if i[a[0]] == a[1]:
+                                next = i
+                                current[1].remove(next)
+
+                        if not next:
+                            next = random.choice(current[1])
+                            current[1].remove(next)
+
+                else:
+                    next = random.choice(current[1])
+                    current[1].remove(next)
+
+            if not next and len(stack) == 1:
+                next = current[1][0]
 
             direction = [(next[0]+1, next[1]),
                           (next[0], next[1]+1),
@@ -202,7 +288,8 @@ def generateGrid(amountR, amountC, start, end):
             directions = direction.copy()
                 
             for i in directions:
-                if i[0] < 0 or i[0] > amountR-1 or i[1] < 0 or i[1] > amountC-1:
+                if i[0] < 0 or i[0] > amountR-1 or\
+                             i[1] < 0 or i[1] > amountC-1:
                     index = direction.index(i)
                     del direction[index]
 
@@ -223,108 +310,7 @@ def generateGrid(amountR, amountC, start, end):
             del stack[-1]
             d = 0
 
-    if maze[end[0]][end[1]] == 0:
-        maze[end[0]][end[1]] = 1
-
-        direction = [(end[0]+1, end[1]),
-                  (end[0], end[1]+1),
-                  (end[0]-1, end[1]),
-                  (end[0], end[1]-1)]
-
-        directions = direction.copy()
-
-        for i in direction:
-            if i[0] < 0 or i[0] > amountR - 1 or i[1] < 0 or i[1] > amountC - 1:
-                index = directions.index(i)
-                del directions[index]
-
-        for i in directions:
-            if maze[i[0]][i[1]] == 1:
-                break
-        else:
-            if end[0] == 0:
-                a = [0, 1]
-            if end[0] == amountR - 1:
-                a = [0, -1]
-            if end[1] == 0:
-                a = [1, 1]
-            if end[1] == amountC - 1:
-                a = [1, -1]
-
-            p = [end[0], end[1]]
-            finish = False
-
-            while not finish:
-                b = (p[0], p[1])
-                p[a[0]] += a[1]
-                maze[p[0]][p[1]] = 1
-
-                direction = [(p[0]+1, p[1]),
-                                (p[0], p[1]+1),
-                                (p[0]-1, p[1]),
-                                (p[0], p[1]-1)]
-
-                directions = direction.copy()
-                        
-                for i in directions:
-                    if i[0] < 0 or i[0] > amountR-1\
-                        or i[1] < 0 or i[1] > amountC-1:
-                        index = direction.index(i)
-                        del direction[index]
-
-                    if i == b:
-                        index = direction.index(i)
-                        del direction[index]
-
-                for i in direction:
-                    if maze[i[0]][i[1]] == 1:
-                        finish = True
-
-    for i in range(amountR - 2):
-        for j in range(amountC - 2):
-            checking = [(i, j),
-                        (i + 1, j),
-                        (i, j + 1),
-                        (i + 1, j + 1)]
-
-            sum = 0
-            for ch in checking:
-                sum = sum + maze[ch[0]][ch[1]]
-
-            if sum == 4:
-                delete = ()
-                checking2 = checking.copy()
-
-                for i in checking2:
-                    if i == end:
-                        index = directions.index(i)
-                        del checking[index]
-
-                for ch in checking:
-                    direction = [(ch[0]+1, ch[1]),
-                                (ch[0], ch[1]+1),
-                                (ch[0]-1, ch[1]),
-                                (ch[0], ch[1]-1)]
-
-                    directions = direction.copy()
-
-                    for i in direction:
-                        if i[0] < 0 or i[0] > amountR - 1\
-                            or i[1] < 0 or i[1] > amountC - 1:
-                            index = directions.index(i)
-                            del directions[index]
-
-                    s = 0
-                    for i in directions:
-                        s = s + maze[i[0]][i[1]]
-
-                    if s <3:
-                        delete = ch
-
-                try:
-                    maze[delete[0]][delete[1]] = 0
-                except IndexError:
-                    pass        
+    maze[end[0]][end[1]] = 1
 
     return maze
 
@@ -337,7 +323,8 @@ def createPath(grid, start, end, amountR, amountC):
                   (start[0], start[1]-1)]
 
     for i in directions:
-        if i[0] < 0 or i[0] > amountR - 1 or i[1] < 0 or i[1] > amountC - 1:
+        if i[0] < 0 or i[0] > amountR - 1 or\
+                     i[1] < 0 or i[1] > amountC - 1:
             index = directions.index(i)
             del directions[index]
 
@@ -379,7 +366,8 @@ def createPath(grid, start, end, amountR, amountC):
             directions = direction.copy()
                 
             for i in directions:
-                if i[0] < 0 or i[0] > amountR-1 or i[1] < 0 or i[1] > amountC-1:
+                if i[0] < 0 or i[0] > amountR-1\
+                             or i[1] < 0 or i[1] > amountC-1:
                     index = direction.index(i)
                     del direction[index]
 
@@ -412,7 +400,8 @@ def createMultiplePath(grid, start, end, points, amountR, amountC):
 
     try:
         for i in range(len(points)):
-            p = createPath(grid, points[i], points[i + 1], amountR, amountC)
+            p = createPath(grid, points[i],
+                         points[i + 1], amountR, amountC)
             paths = paths + p
     except IndexError:
         return paths

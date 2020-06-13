@@ -57,7 +57,8 @@ def main():
                             else:
                                 L = R
 
-                            clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
+                            clickers = maze.generateClickers(mazeX, mazeY,
+                                                     maxMazeWidth//L, R, C)
 
                 for i in clickers:
                     if i.isOver(pos):
@@ -71,20 +72,35 @@ def main():
                             points.append(a)
                             
                         if len(points) == 2:
-                            grid = maze.generateGrid(R, C, points[0], points[1])
-                            peek = maze.fillMaze(peekX, peekY, maxPeekWidth//L, grid)
-                            maze.showSpecial(peek, points)
+                            try:
+                                grid = maze.generateGrid(R, C, 
+                                                points[0], points[1])
+                                peek = maze.fillMaze(peekX, peekY,
+                                             maxPeekWidth//L, grid)
+                                maze.showSpecial(peek, points)
+                            except maze.InvalidDimensionsError:
+                                pass
                         else:
                             grid = []
                             peek = []
 
                 if Generate.isOver(pos):
-                    clickers = []
-                    peek = []
-                    path = maze.createPath(grid, points[0], points[1], R, C)
-                    m = maze.fillMaze(mazeX, mazeY, maxMazeWidth//L, grid)
-                    maze.drawPath(m, path)
-                    maze.showSpecial(m, points)
+                    try:
+                        try:
+                            clickers = []
+                            peek = []
+                            path = maze.createPath(grid, 
+                                        points[0], points[1], R, C)
+                            m = maze.fillMaze(mazeX, mazeY,
+                                             maxMazeWidth//L, grid)
+                            maze.drawPath(m, path)
+                            maze.showSpecial(m, points)
+                        except UnboundLocalError:
+                            raise maze.InvalidDimensionsError(
+                                "Za małe wymiary!"
+                                )
+                    except maze.InvalidDimensionsError:
+                        pass
 
                 if Reset.isOver(pos):
                     if m:
@@ -94,7 +110,8 @@ def main():
                         points = []
                         peek = []
 
-                        clickers = maze.generateClickers(mazeX, mazeY, maxMazeWidth//L, R, C)
+                        clickers = maze.generateClickers(mazeX,
+                                     mazeY, maxMazeWidth//L, R, C)
 
                 for i in m:
                     for j in i:
@@ -109,7 +126,8 @@ def main():
                             
                             if multiple:
                                 paths = maze.createMultiplePath(
-                                    grid, points[0], points[1], multiple, R, C)
+                                    grid, points[0], points[1],
+                                                     multiple, R, C)
 
                                 maze.drawPath(m, paths)
 
