@@ -151,7 +151,8 @@ def generateGrid(amountR, amountC, start, end):
             "Za duże wymiary!"
         )
 
-    if not start or not end:
+    if not start or not end\
+        or start == end:
         raise InvalidPositionError(
             "Nie wybrano punktów"
         )
@@ -177,8 +178,7 @@ def generateGrid(amountR, amountC, start, end):
     x = abs(start[0] - end[0])
     y = abs(start[1] - end[1])
 
-    if (x == 0 and y == 2) or\
-        (x == 2 and y == 0):
+    if x == 0 or y == 0:
         distance = amountR + amountC
         chosen = ()
 
