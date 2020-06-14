@@ -102,7 +102,7 @@ def main():
                                 Error = maze.Button(20, 650, 600, 50,
                                              e.text)
                             except maze.InvalidPositionError as e:
-                                Error = maze.Button(20, 650, 600, 50,
+                                Error = maze.Button(20, 650, 690, 50,
                                              e.text)
                         else:
                             grid = []

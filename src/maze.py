@@ -6,14 +6,31 @@ minDim = 2
 maxDim = 30
 
 class InvalidDimensionsError(Exception):
+    '''
+    Zwracany jest gdy podane zostaną niewłaściwe wymiary.
+
+    Przyjmuje tekst jaki będzie wypisany 
+    jako doprecyzowanie co się stało.
+    '''
     def __init__(self, text):
         self.text = text
 
 class InvalidPositionError(Exception):
+    '''
+    Zwracany jest gdy podane zostaną niewłaściwe punkty.
+
+    Przyjmuje tekst jaki będzie wypisany 
+    jako doprecyzowanie co się stało.
+    '''
     def __init__(self, text):
         self.text = text
 
 class Button():
+    '''
+    Prosty przycisk.
+    
+    Metoda action() jest wirtualna do sprecyzowania póżniej.
+    '''
     colour = (255, 255, 0)
 
     def __init__(self, x, y, width, height, text):
@@ -23,6 +40,7 @@ class Button():
         self.height = height
         self.text = text
 
+    #Rysuje przycisk na ekranie
     def show(self, win):
         pygame.draw.rect(win, self.colour, (self.x, self.y,
                                      self.width, self.height), 0)
@@ -33,16 +51,21 @@ class Button():
             win.blit(text, (self.x + (self.width/2 - text.get_width()/2),
                              self.y + (self.height/2 - text.get_height()/2)))
 
+    #Sprawdza czy kliknięto w przcisk
     def isOver(self, pos):
         if pos[0] > self.x and pos[0] < self.x + self.width:
             if pos[1] > self.y and pos[1] < self.y + self.height:
                 return True  
         return False
 
+    #Określa co stanie się po kliknięciu
     def action(self):
         pass
 
 class Stat(Button):
+    '''
+    Przechowuje numer i wyświetla go na ekranie.
+    '''
     def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
@@ -59,6 +82,12 @@ class Stat(Button):
         self.text = str(newV)
 
 class StatChange(Button):
+    '''
+    Zmienia wartość przypisanego do siebie obiektu.
+
+    Przyjmuje obiekt (w tym programie) Stat i 
+    manipuluje jego wartościami.
+    '''
     def __init__(self, x, y, length, text, object, function):
         self.x = x
         self.y = y
@@ -73,6 +102,7 @@ class StatChange(Button):
         self.object.set(x)
 
 class Wall(Button):
+    '''Ściana labiryntu.'''
     colour = (0, 0, 0)
 
     def __init__(self, x, y, length):
@@ -86,6 +116,11 @@ class Wall(Button):
                                      self.width, self.height), 0)
 
 class Clicker(Wall):
+    '''
+    Służy do wybierania punktów startowego i końcowego.
+    
+    Po kliknięciu zwraca swoją pozycję i zmienia kolor.
+    '''
     clickedColour = (255, 0, 0)
     def __init__(self, x, y, length, point):
         self.x = x
@@ -113,6 +148,11 @@ class Clicker(Wall):
         return self.point
 
 class Corridor(Clicker):
+    '''
+    Korytarz labiryntu.
+    
+    Po kliknięciu zwraca swoją pozycję i zmienia kolor.
+    '''
     baseColour = (23, 234, 134)
     visitedColour = (234, 123, 23)
     cColour = (255, 0, 0)
@@ -141,6 +181,16 @@ class Corridor(Clicker):
                                  self.width, self.height), 0)
 
 def generateGrid(amountR, amountC, start, end):
+    '''
+    Generuje listę punktów będącą reprezentacją labiryntu .
+
+    Zwraca listę dwuwymiarową wypełnioną 0 i 1 odpowiadającym 
+    ścianom i korytarzom labiryntu o podanych rozmiarach od 
+    punktu startowego do końcowego.
+
+    Po podaniu niewłaściwych punktów startu i końca lub 
+    gdy podane wielkości są za duże bądź za małe zwraca błąd.
+    '''
     if amountC < minDim or amountR < minDim:
         raise InvalidDimensionsError(
             "Za małe wymiary!"
@@ -198,6 +248,7 @@ def generateGrid(amountR, amountC, start, end):
     areaR = amountR // 2
     areaC = amountC // 2
 
+    #Wykorzystany algorytm to algorytm przeszukiwania z krokiem 3
     while stack:
         current = stack[-1]
 
@@ -211,6 +262,8 @@ def generateGrid(amountR, amountC, start, end):
         if current[1]:
             next = ()
             if not found:
+                #Sprawdza czy głowa przeszukiwacza znajduje sie w 
+                #Otoczeniu punktu końcowego
                 if areaR > end[0]:
                     if current[0][0] >= end[0]\
                         and  current[0][0] <= areaR:
@@ -236,7 +289,8 @@ def generateGrid(amountR, amountC, start, end):
                         isC = True
                     else:
                         isC = False
-
+                
+                #Jeśli tak kiruje glowę do punktu końcowego
                 if isC and isR:
                     d = 0
                     distance = amountC + amountR
@@ -252,6 +306,7 @@ def generateGrid(amountR, amountC, start, end):
                     current[1].remove(next)
 
             if not next:
+                #Przeszukuje labirynt z krokiem 3
                 if d%3 == 0:
                     d = 0
 
@@ -285,9 +340,11 @@ def generateGrid(amountR, amountC, start, end):
                     next = random.choice(current[1])
                     current[1].remove(next)
 
-            if not next and len(stack) == 1:
+            if not next:
                 next = current[1][0]
+                current[1].remove(next)
 
+            #Wybiera, które punkty będą następne
             direction = [(next[0]+1, next[1]),
                           (next[0], next[1]+1),
                           (next[0]-1, next[1]),
@@ -323,6 +380,31 @@ def generateGrid(amountR, amountC, start, end):
     return maze
 
 def createPath(grid, start, end, amountR, amountC):
+    '''
+    Generuje ścierzkę między punktem startowym i końcowym.
+
+    Zwraca listę punktów między punktem startowym i końcowym 
+    dla podanej siatki punktów.
+
+    Gdy podane wielkości są za duże bądź za małe 
+    lub gdy podana siatka jest pusta zwraca błąd.
+    '''
+
+    if amountC < minDim or amountR < minDim:
+        raise InvalidDimensionsError(
+            "Za małe wymiary!"
+        )
+
+    if amountC > maxDim or amountR  > maxDim:
+        raise InvalidDimensionsError(
+            "Za duże wymiary!"
+        )
+
+    if not grid:
+        raise InvalidDimensionsError(
+            "Złe wymiary!"
+        )
+
     stack = []
 
     directions = [(start[0]+1, start[1]),
@@ -349,6 +431,8 @@ def createPath(grid, start, end, amountR, amountC):
 
     stack.append([start, dir])
 
+    #Wykorzystuje algorytm przeszukiwania 
+    #Zawsze wybiera punkt najbliżej punktu końcowego
     while stack:
         current = stack[-1]
 
@@ -402,6 +486,32 @@ def createPath(grid, start, end, amountR, amountC):
     return path
 
 def createMultiplePath(grid, start, end, points, amountR, amountC):
+    '''
+    Generuje ścierzkę między punktem startowym i końcowym 
+    poprzez podane punkty pośrednie.
+
+    Zwraca listę punktów między punktem startowym i końcowym 
+    dla podanej siatki punktów.
+
+    Gdy podane wielkości są za duże bądź za małe 
+    lub gdy podana siatka jest pusta zwraca błąd.
+    '''
+
+    if amountC < minDim or amountR < minDim:
+        raise InvalidDimensionsError(
+            "Za małe wymiary!"
+        )
+
+    if amountC > maxDim or amountR  > maxDim:
+        raise InvalidDimensionsError(
+            "Za duże wymiary!"
+        )
+
+    if not grid:
+        raise InvalidDimensionsError(
+            "Złe wymiary!"
+        )
+
     points.insert(0, start)
     points.append(end)
     paths = []
@@ -415,6 +525,12 @@ def createMultiplePath(grid, start, end, points, amountR, amountC):
         return paths
 
 def fillMaze(X, Y, length, grid):
+    '''
+    Wypełnia siatkę punktów korytarzami i ścianami.
+    
+    Zwraca liste wypełnioną obiektami ścian i korytarzy 
+    o podanej szerokości zaczynając od podanych współrzędnych.
+    '''
     x = X
     y = Y
     maze = []
@@ -436,6 +552,7 @@ def fillMaze(X, Y, length, grid):
     return maze   
 
 def generateClickers(X, Y, length, Rows, Collumns):
+    '''Tworzy przyciski do wybierana punktów startowego i końcowego.'''
     x = X
     y = Y
     clickers = []
@@ -452,6 +569,7 @@ def generateClickers(X, Y, length, Rows, Collumns):
     return clickers
 
 def drawPath(maze, path):
+    '''Koloruje ścierzkę w labiryncie.'''
     if maze:
         for i in range(len(maze)):
             for j in range(len(maze[0])):
@@ -461,14 +579,17 @@ def drawPath(maze, path):
                     maze[i][j].visited = False
 
 def drawMaze(win, grid):
+    '''Rysuje labirynt na ekranie.'''
     for i in grid:
         for j in i:
             j.show(win)
 
 def drawClickers(win, l):
+    '''Rysje na ekranie przyciski do wybierania punktów.'''
     for i in l:
         i.show(win)
 
 def showSpecial(grid, points):
+    '''Koloruje start i koniec.'''
     for i in points:
         grid[i[0]][i[1]].special = True
